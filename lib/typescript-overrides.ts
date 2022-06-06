@@ -1,4 +1,4 @@
-const debug = require('debug')('cypress:webpack')
+const debug = require('debug')('cypress:vite')
 const _ = require('lodash')
 
 import { CompilerOptions, CreateProgramOptions } from 'typescript'
@@ -17,7 +17,7 @@ export const overrideSourceMaps = (sourceMap: boolean, typescriptPath?: string) 
       return
     }
 
-    // when using webpack-preprocessor as a local filesystem dependency (`file:...`),
+    // when using vite-preprocessor as a local filesystem dependency (`file:...`),
     // require(typescript) will resolve to this repo's `typescript` devDependency, not the
     // targeted project's `typescript`, which breaks monkeypatching. resolving from the
     // CWD avoids this issue.

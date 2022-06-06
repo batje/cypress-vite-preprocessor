@@ -5,11 +5,11 @@ export default defineConfig({
   'e2e': {
     'supportFile': false,
     async setupNodeEvents (on, config) {
-      const webpackPreprocessor = await import('../..')
+      const vitePreprocessor = await import('../..')
 
-      const webpack = await import('./webpack.config')
+      const vite = await import('./vite.config')
 
-      on('file:preprocessor', webpackPreprocessor({ webpack }))
+      on('file:preprocessor', vitePreprocessor({ vite }))
 
       return config
     },

@@ -7,7 +7,7 @@
     totalFailed: 1
   },
   // https://github.com/cypress-io/cypress-webpack-preprocessor/issues/64
-  stdoutInclude: 'Webpack Compilation Error'
+  stdoutInclude: 'vite Compilation Error'
 } */
 
 describe('foo', ()=>{

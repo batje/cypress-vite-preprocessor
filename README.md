@@ -1,11 +1,11 @@
-# Cypress Webpack Preprocessor
+# Cypress vite Preprocessor
 
-Cypress preprocessor for bundling JavaScript via webpack
+Cypress preprocessor for bundling JavaScript via vite
 
 ## Installation
 
 ```sh
-npm install --save-dev @cypress/webpack-preprocessor
+npm install --save-dev @cypress/vite-preprocessor
 ```
 
 This package relies on the following [peer dependencies](https://docs.npmjs.com/files/package.json#peerdependencies):
@@ -13,20 +13,20 @@ This package relies on the following [peer dependencies](https://docs.npmjs.com/
 * @babel/core
 * @babel/preset-env
 * babel-loader
-* webpack
+* vite
 
 It is likely you already have these installed either directly or as a transient dependency, but if not, you will need to install them.
 
 ```sh
-npm install --save-dev @babel/core @babel/preset-env babel-loader webpack
+npm install --save-dev @babel/core @babel/preset-env babel-loader vite
 ```
 
 ## Compatibility
 
-This version is only compatible with webpack 4.x+ and Babel 7.x+.
+This version is only compatible with vite 4.x+ and Babel 7.x+.
 
-* If you need webpack 2 or 3 support, use `@cypress/webpack-preprocessor` 1.x
-* If you need Babel 6 support, use `@cypress/webpack-preprocessor` <= 2.x
+* If you need vite 2 or 3 support, use `@cypress/vite-preprocessor` 1.x
+* If you need Babel 6 support, use `@cypress/vite-preprocessor` <= 2.x
 
 By default, this plugin (and all Cypress plugins) run in the Node version that is bundled with Cypress. Alternatively, you can use the Node found on your system by setting [nodeVersion: system](https://on.cypress.io/configuration#Node-version) configuration option. A common use case for using the system Node are native dependencies like `node-sass`.
 
@@ -35,41 +35,41 @@ By default, this plugin (and all Cypress plugins) run in the Node version that i
 In your project's [plugins file](https://on.cypress.io/guides/tooling/plugins-guide.html):
 
 ```javascript
-const webpackPreprocessor = require('@cypress/webpack-preprocessor')
+const vitePreprocessor = require('@cypress/vite-preprocessor')
 
 module.exports = (on) => {
-  on('file:preprocessor', webpackPreprocessor())
+  on('file:preprocessor', vitePreprocessor())
 }
 ```
 
 ## Examples
 
-- [React app](https://github.com/cypress-io/cypress/tree/develop/npm/webpack-preprocessor/examples/react-app) shows how to point Cypress at Webpack configuration from `react-scripts` dependency
-- [use-babelrc](https://github.com/cypress-io/cypress/tree/develop/npm/webpack-preprocessor/examples/use-babelrc) shows how to use your project's `.babelrc` with Webpack
-- [use-ts-loader](https://github.com/cypress-io/cypress/tree/develop/npm/webpack-preprocessor/examples/use-ts-loader) shows how to transpile TypeScript specs following [Webpack TypeScript guide](https://webpack.js.org/guides/typescript/)
+- [React app](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/react-app) shows how to point Cypress at vite configuration from `react-scripts` dependency
+- [use-babelrc](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/use-babelrc) shows how to use your project's `.babelrc` with vite
+- [use-ts-loader](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/use-ts-loader) shows how to transpile TypeScript specs following [vite TypeScript guide](https://vite.js.org/guides/typescript/)
 
 ## Options
 
-Pass in options as the second argument to `webpack`:
+Pass in options as the second argument to `vite`:
 
 ```javascript
-const webpackPreprocessor = require('@cypress/webpack-preprocessor')
+const vitePreprocessor = require('@cypress/vite-preprocessor')
 
 module.exports = (on) => {
   const options = {
-    // send in the options from your webpack.config.js, so it works the same
+    // send in the options from your vite.config.js, so it works the same
     // as your app's code
-    webpackOptions: require('../../webpack.config'),
+    viteOptions: require('../../vite.config'),
     watchOptions: {},
   }
 
-  on('file:preprocessor', webpackPreprocessor(options))
+  on('file:preprocessor', vitePreprocessor(options))
 }
 ```
 
-### webpackOptions
+### viteOptions
 
-Object of webpack options. Just `require` in the options from your `webpack.config.js` to use the same options as your app.
+Object of vite options. Just `require` in the options from your `vite.config.js` to use the same options as your app.
 
 **Default**:
 
@@ -95,24 +95,24 @@ Object of webpack options. Just `require` in the options from your `webpack.conf
 
 Source maps are **always enabled** unless explicitly disabled by specifying `devtool: false`.
 
-Webpack [mode](https://webpack.js.org/configuration/mode/) is set to `development` if not present. You can set `mode` to "development", "production" or "none".
+vite [mode](https://vite.js.org/configuration/mode/) is set to `development` if not present. You can set `mode` to "development", "production" or "none".
 
 ### use babelrc
 
-If you have a `.babelrc` file and would like to use it, then you must delete `options.presets` from the default Webpack options
+If you have a `.babelrc` file and would like to use it, then you must delete `options.presets` from the default vite options
 
 ```js
-const webpackPreprocessor = require('@cypress/webpack-preprocessor')
-const defaults = webpackPreprocessor.defaultOptions
+const vitePreprocessor = require('@cypress/vite-preprocessor')
+const defaults = vitePreprocessor.defaultOptions
 module.exports = (on) => {
-  delete defaults.webpackOptions.module.rules[0].use[0].options.presets
-  on('file:preprocessor', webpackPreprocessor(defaults))
+  delete defaults.viteOptions.module.rules[0].use[0].options.presets
+  on('file:preprocessor', vitePreprocessor(defaults))
 }
 ```
 
 ### watchOptions
 
-Object of options for watching. See [webpack's docs](https://webpack.js.org/configuration/watch).
+Object of options for watching. See [vite's docs](https://vite.js.org/configuration/watch).
 
 **Default**: `{}`
 
@@ -120,39 +120,39 @@ Object of options for watching. See [webpack's docs](https://webpack.js.org/conf
 
 An array of file path strings for additional entries to be included in the bundle.
 
-By necessity, this preprocessor sets the entry point for webpack as the spec file or support file. The `additionalEntries` option allows you to specify more entry points in order to utilize webpack's [multi-main entry](https://webpack.js.org/concepts/entry-points/#single-entry-shorthand-syntax). This allows runtime dependency resolution.
+By necessity, this preprocessor sets the entry point for vite as the spec file or support file. The `additionalEntries` option allows you to specify more entry points in order to utilize vite's [multi-main entry](https://vite.js.org/concepts/entry-points/#single-entry-shorthand-syntax). This allows runtime dependency resolution.
 
 **Default**: `[]`
 
 **Example**:
 
 ```javascript
-const webpackPreprocessor = require('@cypress/webpack-preprocessor')
+const vitePreprocessor = require('@cypress/vite-preprocessor')
 
 module.exports = (on) => {
   const options = {
-    webpackOptions: require('../../webpack.config'),
+    viteOptions: require('../../vite.config'),
     additionalEntries: ['./app/some-module.js'],
   }
 
-  on('file:preprocessor', webpackPreprocessor(options))
+  on('file:preprocessor', vitePreprocessor(options))
 }
 ```
 
 ## Modifying default options
 
-The default options are provided as `webpack.defaultOptions` so they can be more easily modified.
+The default options are provided as `vite.defaultOptions` so they can be more easily modified.
 
 If, for example, you want to update the options for the `babel-loader` to add the [stage-3 preset](https://babeljs.io/docs/plugins/preset-stage-3/), you could do the following:
 
 ```javascript
-const webpackPreprocessor = require('@cypress/webpack-preprocessor')
+const vitePreprocessor = require('@cypress/vite-preprocessor')
 
 module.exports = (on) => {
-  const options = webpackPreprocessor.defaultOptions
-  options.webpackOptions.module.rules[0].use[0].options.presets.push('babel-preset-stage-3')
+  const options = vitePreprocessor.defaultOptions
+  options.viteOptions.module.rules[0].use[0].options.presets.push('babel-preset-stage-3')
 
-  on('file:preprocessor', webpackPreprocessor(options))
+  on('file:preprocessor', vitePreprocessor(options))
 }
 ```
 
@@ -161,15 +161,15 @@ module.exports = (on) => {
 You can see debug messages from this module by running with environment variable
 
 ```
-DEBUG=cypress:webpack
+DEBUG=cypress:vite
 ```
 
-You can see Webpack bundle diagnostic output (timings, chunks, sizes) by running with environment variable
+You can see vite bundle diagnostic output (timings, chunks, sizes) by running with environment variable
 
 ```
-DEBUG=cypress:webpack:stats
+DEBUG=cypress:vite:stats
 ```
-![Webpack stats](images/webpack-stats.png)
+![vite stats](images/vite-stats.png)
 
 ## Contributing
 

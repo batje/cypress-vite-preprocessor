@@ -2,11 +2,12 @@ const { defineConfig } = require('cypress')
 
 module.exports = defineConfig({
   e2e: {
+    debug: false,
     specPattern: 'cypress/tests/**/*',
     setupNodeEvents (on, config) {
-      const webpackPreprocessor = require('./index')
+      const vitePreprocessor = require('./index')
 
-      on('file:preprocessor', webpackPreprocessor())
+      on('file:preprocessor', vitePreprocessor())
 
       return config
     },

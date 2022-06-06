@@ -9,33 +9,33 @@ const expect = chai.expect
 
 chai.use(require('sinon-chai'))
 
-const webpack = sinon.stub()
+const vite = sinon.stub()
 
 mockery.enable({
   warnOnUnregistered: false,
 })
 
-mockery.registerMock('webpack', webpack)
+mockery.registerMock('vite', vite)
 
 const preprocessor = require('../../index')
 const typescriptOverrides = require('../../lib/typescript-overrides')
 
-describe('webpack preprocessor', function () {
+describe('vite preprocessor', function () {
   beforeEach(function () {
-    webpack.reset()
+    vite.reset()
     sinon.restore()
 
     this.watchApi = {
       close: sinon.spy(),
     }
 
-    this.compilerApi = {
-      run: sinon.stub(),
-      watch: sinon.stub().returns(this.watchApi),
-      plugin: sinon.stub(),
+    this.vite = {
+      build: sinon.stub().returns(Promise),
+//      watch: sinon.stub().returns(this.watchApi),
+//      plugin: sinon.stub(),
     }
 
-    webpack.returns(this.compilerApi)
+    //build.returns(this.compilerApi)
 
     this.statsApi = {
       hasErrors () {
@@ -72,12 +72,9 @@ describe('webpack preprocessor', function () {
 
     it('has defaultOptions attached to it', function () {
       expect(preprocessor.defaultOptions).to.be.an('object')
-      expect(preprocessor.defaultOptions.webpackOptions.module.rules).to.be.an('array')
+      expect(preprocessor.defaultOptions.viteOptions.build.emptyOutDir).to.be.a('boolean')
     })
 
-    it('defaultOptions are deeply cloned, preserving regexes', () => {
-      expect(preprocessor.defaultOptions.webpackOptions.module.rules[0].test).to.be.an.instanceOf(RegExp)
-    })
   })
 
   describe('preprocessor function', function () {
@@ -87,33 +84,34 @@ describe('webpack preprocessor', function () {
 
     describe('when it finishes cleanly', function () {
       beforeEach(function () {
-        this.compilerApi.run.yields(null, this.statsApi)
+        this.vite.build.yields(null, this.statsApi)
       })
 
-      it('runs webpack', function () {
+     /* it('runs vite', function () {
         expect(preprocessor.__bundles()[this.file.filePath]).to.be.undefined
 
         return this.run().then(() => {
-          expect(preprocessor.__bundles()[this.file.filePath].deferreds).to.be.empty
-          expect(preprocessor.__bundles()[this.file.filePath].promise).to.be.instanceOf(Promise)
-          expect(webpack).to.be.called
+        //  expect(preprocessor.__bundles()[this.file.filePath].deferreds).to.be.empty
+          //expect(preprocessor.__bundles()[this.file.filePath]).to.be.instanceOf(Promise)
+          expect(vite.build).to.be.called
         })
       })
+      */
 
       it('returns existing bundle if called again with same filePath', function () {
-        webpack.reset()
-        webpack.returns(this.compilerApi)
+        vite.reset()
+        vite.returns(this.vite)
 
         const run = preprocessor(this.options)
 
         run(this.file)
         run(this.file)
-        expect(webpack).to.be.calledOnce
+        expect(vite).to.be.calledOnce
       })
 
       it('specifies the entry file', function () {
         return this.run().then(() => {
-          expect(webpack).to.be.calledWithMatch({
+          expect(vite).to.be.calledWithMatch({
             entry: [this.file.filePath],
           })
         })
@@ -123,7 +121,7 @@ describe('webpack preprocessor', function () {
         return this.run({
           additionalEntries: ['entry-1.js', 'entry-2.js'],
         }).then(() => {
-          expect(webpack).to.be.calledWithMatch({
+          expect(vite).to.be.calledWithMatch({
             entry: [
               this.file.filePath,
               'entry-1.js',
@@ -135,7 +133,7 @@ describe('webpack preprocessor', function () {
 
       it('specifies output path and filename', function () {
         return this.run().then(() => {
-          expect(webpack).to.be.calledWithMatch({
+          expect(vite).to.be.calledWithMatch({
             output: {
               path: 'output',
               filename: 'output.js',
@@ -148,7 +146,7 @@ describe('webpack preprocessor', function () {
         this.file.outputPath = 'output/output.ts'
 
         return this.run().then(() => {
-          expect(webpack.lastCall.args[0].output).to.eql({
+          expect(vite.lastCall.args[0].output).to.eql({
             path: 'output',
             filename: 'output.ts.js',
           })
@@ -162,7 +160,7 @@ describe('webpack preprocessor', function () {
 
         it('enables inline source maps', function () {
           return this.run().then(() => {
-            expect(webpack).to.be.calledWithMatch({
+            expect(vite).to.be.calledWithMatch({
               devtool: 'inline-source-map',
             })
 
@@ -171,10 +169,10 @@ describe('webpack preprocessor', function () {
         })
 
         it('does not enable inline source maps when devtool is false', function () {
-          const options = { webpackOptions: { devtool: false } }
+          const options = { viteOptions: { devtool: false } }
 
           return this.run(options).then(() => {
-            expect(webpack).to.be.calledWithMatch({
+            expect(vite).to.be.calledWithMatch({
               devtool: false,
             })
 
@@ -183,10 +181,10 @@ describe('webpack preprocessor', function () {
         })
 
         it('always sets devtool even when mode is "production"', function () {
-          const options = { webpackOptions: { mode: 'production' } }
+          const options = { viteOptions: { mode: 'production' } }
 
           return this.run(options).then(() => {
-            expect(webpack).to.be.calledWithMatch({
+            expect(vite).to.be.calledWithMatch({
               devtool: 'inline-source-map',
             })
 
@@ -198,17 +196,17 @@ describe('webpack preprocessor', function () {
       describe('mode', function () {
         it('sets mode to development by default', function () {
           return this.run().then(() => {
-            expect(webpack).to.be.calledWithMatch({
+            expect(vite).to.be.calledWithMatch({
               mode: 'development',
             })
           })
         })
 
         it('follows user mode if present', function () {
-          const options = { webpackOptions: { mode: 'production' } }
+          const options = { viteOptions: { mode: 'production' } }
 
           return this.run(options).then(() => {
-            expect(webpack).to.be.calledWithMatch({
+            expect(vite).to.be.calledWithMatch({
               mode: 'production',
             })
           })
@@ -301,26 +299,26 @@ describe('webpack preprocessor', function () {
         })
       })
 
-      it('uses default webpack options when no user options', function () {
+      it('uses default vite options when no user options', function () {
         return this.run().then(() => {
-          expect(webpack.lastCall.args[0].module.rules[0].use).to.have.length(1)
-          expect(webpack.lastCall.args[0].module.rules[0].use[0].loader).to.be.a('string')
+          expect(vite.lastCall.args[0].module.rules[0].use).to.have.length(1)
+          expect(vite.lastCall.args[0].module.rules[0].use[0].loader).to.be.a('string')
         })
       })
 
-      it('uses default options when no user webpack options', function () {
+      it('uses default options when no user vite options', function () {
         return this.run({}).then(() => {
-          expect(webpack.lastCall.args[0].module.rules[0].use).to.have.length(1)
-          expect(webpack.lastCall.args[0].module.rules[0].use[0].loader).to.be.a('string')
+          expect(vite.lastCall.args[0].module.rules[0].use).to.have.length(1)
+          expect(vite.lastCall.args[0].module.rules[0].use[0].loader).to.be.a('string')
         })
       })
 
       it('does not use default options when user options are non-default', function () {
-        const options = { webpackOptions: { module: { rules: [] } } }
+        const options = { viteOptions: { module: { rules: [] } } }
 
         return this.run(options).then(() => {
-          expect(webpack).to.be.calledWithMatch({
-            module: options.webpackOptions.module,
+          expect(vite).to.be.calledWithMatch({
+            module: options.viteOptions.module,
           })
         })
       })
@@ -360,7 +358,7 @@ describe('webpack preprocessor', function () {
         this.compilerApi.run.yields(null, this.statsApi)
 
         return this.run().catch((err) => {
-          expect(err.message).to.equal(`Webpack Compilation Error\n${errsNoStack.join('\n\n')}`)
+          expect(err.message).to.equal(`vite Compilation Error\n${errsNoStack.join('\n\n')}`)
         })
       })
     })

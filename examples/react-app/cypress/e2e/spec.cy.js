@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-// this spec file will be bundled using the same Webpack options
+// this spec file will be bundled using the same vite options
 // as the React App itself. See ../plugins/index.js
 
 describe('Todo app', () => {

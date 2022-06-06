@@ -1,4 +1,4 @@
-// https://webpack.js.org/guides/typescript/
+// https://vite.js.org/guides/typescript/
 const path = require('path')
 
 module.exports = {

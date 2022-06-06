@@ -1,43 +1,43 @@
 /// <reference types="cypress" />
 /// <reference types="../../../.." />
 // @ts-check
-const findWebpack = require('find-webpack')
-const webpackPreprocessor = require('../../../..')
+const findvite = require('find-vite')
+const vitePreprocessor = require('../../../..')
 
 /**
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on) => {
-  // find the Webpack config used by react-scripts
-  const webpackOptions = findWebpack.getWebpackOptions()
+  // find the vite config used by react-scripts
+  const viteOptions = findvite.getviteOptions()
 
-  if (!webpackOptions) {
-    throw new Error('Could not find Webpack in this project 😢')
+  if (!viteOptions) {
+    throw new Error('Could not find vite in this project 😢')
   }
 
-  // if we just pass webpackOptions to the preprocessor
+  // if we just pass viteOptions to the preprocessor
   // it won't work - because react-scripts by default
   // includes plugins that split specs into chunks, etc.
-  // https://github.com/cypress-io/cypress-webpack-preprocessor/issues/31
+  // https://github.com/cypress-io/cypress-vite-preprocessor/issues/31
 
   // solution 1
   // blunt: delete entire optimization object
-  // delete webpackOptions.optimization
+  // delete viteOptions.optimization
 
   // solution 2
   // use a module that carefully removes only plugins
   // that we found to be breaking the bundling
-  // https://github.com/bahmutov/find-webpack
+  // https://github.com/bahmutov/find-vite
   const cleanOptions = {
     reactScripts: true,
   }
 
-  findWebpack.cleanForCypress(cleanOptions, webpackOptions)
+  findvite.cleanForCypress(cleanOptions, viteOptions)
 
   const options = {
-    webpackOptions,
+    viteOptions,
     watchOptions: {},
   }
 
-  on('file:preprocessor', webpackPreprocessor(options))
+  on('file:preprocessor', vitePreprocessor(options))
 }

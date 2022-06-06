@@ -3,11 +3,11 @@ module.exports = {
   'e2e': {
     'supportFile': false,
     setupNodeEvents (on, config) {
-      const webpackPreprocessor = require('../..')
-      const defaults = webpackPreprocessor.defaultOptions
+      const vitePreprocessor = require('../..')
+      const defaults = vitePreprocessor.defaultOptions
 
-      delete defaults.webpackOptions.module.rules[0].use[0].options.presets
-      on('file:preprocessor', webpackPreprocessor(defaults))
+      delete defaults.viteOptions.module.rules[0].use[0].options.presets
+      on('file:preprocessor', vitePreprocessor(defaults))
 
       return config
     },

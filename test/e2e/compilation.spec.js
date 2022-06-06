@@ -11,6 +11,7 @@ chai.use(sinonChai)
 const { expect } = chai
 
 const preprocessor = require('../../dist/index')
+const { fail } = require('assert')
 
 const normalizeErrMessage = (message) => {
   return message.replace(/\/\S+\/_test/g, '<path>/_test')
@@ -27,7 +28,7 @@ const createFile = ({ name = 'example_spec.js', shouldWatch = false } = {}) => {
   })
 }
 
-describe('webpack preprocessor - e2e', () => {
+describe('vite preprocessor - e2e', () => {
   let file
 
   beforeEach(async () => {
@@ -48,7 +49,7 @@ describe('webpack preprocessor - e2e', () => {
   it('correctly preprocesses the file', () => {
     const options = preprocessor.defaultOptions
 
-    options.webpackOptions.mode = 'production' // snapshot will be minified
+    options.viteOptions.mode = 'production' // snapshot will be minified
     file = createFile()
 
     return preprocessor(options)(file).then((outputPath) => {
@@ -99,6 +100,10 @@ describe('webpack preprocessor - e2e', () => {
           expect(err.stack).to.include('Unexpected token')
           resolve()
         })
+        .then((yes)=> {
+          fail("This compile should have thrown an error")
+        }
+        )
       }, 1000)
     })
   })
