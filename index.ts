@@ -1,6 +1,7 @@
 import * as viteImport from "vite";
 import * as events from "events";
 import * as _ from "lodash";
+const istanbul = require("vite-plugin-istanbul");
 
 const path = require("path");
 const debug = require("debug")("cypress:vite");
@@ -91,7 +92,6 @@ interface PreprocessorOptions {
   viteOptions?: viteImport.InlineConfig;
   watchOptions?: Object;
   typescript?: string;
-  additionalEntries?: string[];
 }
 
 interface FileEvent extends events.EventEmitter {
@@ -120,15 +120,14 @@ interface vitePreprocessor extends vitePreprocessorFn {
     ```
     const defaults = vitePreprocessor.defaultOptions
     module.exports = (on) => {
-      delete defaults.viteOptions.module.rules[0].use[0].options.presets
       on('file:preprocessor', vitePreprocessor(defaults))
     }
     ```
    *
-   * @type {Omit<PreprocessorOptions, 'additionalEntries'>}
+   * @type {<PreprocessorOptions>}
    * @memberof vitePreprocessor
    */
-  defaultOptions: Omit<PreprocessorOptions, "additionalEntries">;
+  defaultOptions: PreprocessorOptions;
 }
 
 /**
@@ -168,9 +167,11 @@ const preprocessor: vitePreprocessor = (
       debug(`already have bundle for ${filePath}`);
 
       Promise.resolve(bundles[filePath]);
+      return;
     }
 
-    const defaultviteOptions = getDefaultviteOptions();
+    let defaultviteOptions = getDefaultviteOptions();
+    _.merge(defaultviteOptions, options); //getDefaultviteOptions();
 
     // we're provided a default output path that lives alongside Cypress's
     // app data files so we don't have to worry about where to put the bundled
@@ -187,8 +188,6 @@ const preprocessor: vitePreprocessor = (
       path.extname(outputPath)
     );
 
-    //const entry = filePath; //[filePath].concat(options.additionalEntries || [])
-
     const watchOptions = options.watchOptions || { buildDelay: 0 };
 
     let viteOptions = defaultviteOptions;
@@ -199,7 +198,6 @@ const preprocessor: vitePreprocessor = (
         },
       };
     } else {
-      viteOptions.mode = "production";
       viteOptions.build.outDir = path.dirname(outputPath);
       viteOptions.build.lib = {
         entry: filePath,
@@ -207,6 +205,17 @@ const preprocessor: vitePreprocessor = (
         formats: ["es"],
         name: filenameWithoutExtension,
       };
+      /* viteOptions.plugins = [
+        istanbul({
+          include: "src/**",
+          exclude: ["node_modules", "tests", "results", "dist", "public"],
+          extension: [".js", ".ts", ".vue", ".mjs"],
+          requireEnv: false,
+          //  checkProd: true,
+          cypress: true,
+        }),
+      ];
+      */
     }
     if (file.shouldWatch) {
       viteOptions.build.watch = watchOptions;
@@ -233,7 +242,7 @@ const preprocessor: vitePreprocessor = (
             });
             watcher.on("event", (e) => {
               if (e.code === "ERROR") {
-                throw e;
+                reject(e);
               }
             });
           }
@@ -241,6 +250,7 @@ const preprocessor: vitePreprocessor = (
           resolve(outputPath);
         })
         .catch(function (error) {
+          console.error(error);
           reject(error);
         });
     });

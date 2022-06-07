@@ -10,23 +10,17 @@ npm install --save-dev @cypress/vite-preprocessor
 
 This package relies on the following [peer dependencies](https://docs.npmjs.com/files/package.json#peerdependencies):
 
-* @babel/core
-* @babel/preset-env
-* babel-loader
 * vite
 
 It is likely you already have these installed either directly or as a transient dependency, but if not, you will need to install them.
 
 ```sh
-npm install --save-dev @babel/core @babel/preset-env babel-loader vite
+npm install --save-dev vite
 ```
 
 ## Compatibility
 
-This version is only compatible with vite 4.x+ and Babel 7.x+.
-
-* If you need vite 2 or 3 support, use `@cypress/vite-preprocessor` 1.x
-* If you need Babel 6 support, use `@cypress/vite-preprocessor` <= 2.x
+This version is only compatible with vite 2.x+
 
 By default, this plugin (and all Cypress plugins) run in the Node version that is bundled with Cypress. Alternatively, you can use the Node found on your system by setting [nodeVersion: system](https://on.cypress.io/configuration#Node-version) configuration option. A common use case for using the system Node are native dependencies like `node-sass`.
 
@@ -44,10 +38,7 @@ module.exports = (on) => {
 
 ## Examples
 
-- [React app](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/react-app) shows how to point Cypress at vite configuration from `react-scripts` dependency
-- [use-babelrc](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/use-babelrc) shows how to use your project's `.babelrc` with vite
-- [use-ts-loader](https://github.com/cypress-io/cypress/tree/develop/npm/vite-preprocessor/examples/use-ts-loader) shows how to transpile TypeScript specs following [vite TypeScript guide](https://vite.js.org/guides/typescript/)
-
+TODO
 ## Options
 
 Pass in options as the second argument to `vite`:
@@ -95,24 +86,9 @@ Object of vite options. Just `require` in the options from your `vite.config.js`
 
 Source maps are **always enabled** unless explicitly disabled by specifying `devtool: false`.
 
-vite [mode](https://vite.js.org/configuration/mode/) is set to `development` if not present. You can set `mode` to "development", "production" or "none".
-
-### use babelrc
-
-If you have a `.babelrc` file and would like to use it, then you must delete `options.presets` from the default vite options
-
-```js
-const vitePreprocessor = require('@cypress/vite-preprocessor')
-const defaults = vitePreprocessor.defaultOptions
-module.exports = (on) => {
-  delete defaults.viteOptions.module.rules[0].use[0].options.presets
-  on('file:preprocessor', vitePreprocessor(defaults))
-}
-```
-
 ### watchOptions
 
-Object of options for watching. See [vite's docs](https://vite.js.org/configuration/watch).
+Object of options for watching. See [vite's docs](https://vitejs.dev/guide/build.html#rebuild-on-files-changes).
 
 **Default**: `{}`
 
@@ -122,7 +98,16 @@ An array of file path strings for additional entries to be included in the bundl
 
 By necessity, this preprocessor sets the entry point for vite as the spec file or support file. The `additionalEntries` option allows you to specify more entry points in order to utilize vite's [multi-main entry](https://vite.js.org/concepts/entry-points/#single-entry-shorthand-syntax). This allows runtime dependency resolution.
 
-**Default**: `[]`
+**Default**: `
+// vite.config.js
+module.exports = defineConfig({
+  build: {
+    watch: {
+      // https://rollupjs.org/guide/en/#watch-options
+    }
+  }
+})
+`
 
 **Example**:
 

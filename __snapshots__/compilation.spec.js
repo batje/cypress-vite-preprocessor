@@ -5,7 +5,8 @@ it("is a test", () => {
   expect(b).to.equal(2);
   expect(Math.min(...[3, 4])).to.equal(3);
 });
-//# sourceMappingURL=example_spec_output.js.map`
+//# sourceMappingURL=example_spec_output.js.map
+`
 
 exports['vite preprocessor - e2e has less verbose syntax error 1'] = `
 Unexpected token (1:18)

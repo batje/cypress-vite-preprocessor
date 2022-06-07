@@ -29,22 +29,11 @@ describe('vite preprocessor', function () {
       close: sinon.spy(),
     }
 
-    this.vite = {
-      build: sinon.stub().returns(Promise),
-//      watch: sinon.stub().returns(this.watchApi),
-//      plugin: sinon.stub(),
+    this.compilerApi = {
+      build: sinon.stub(),
     }
 
-    //build.returns(this.compilerApi)
-
-    this.statsApi = {
-      hasErrors () {
-        return false
-      },
-      toJson () {
-        return { warnings: [], errors: [] }
-      },
-    }
+    vite.returns(this.compilerApi)
 
     this.file = {
       filePath: 'path/to/file.js',
@@ -60,7 +49,7 @@ describe('vite preprocessor', function () {
       onClose: sinon.stub(),
     }
 
-    this.run = (options, file = this.file) => {
+    this.build = (options, file = this.file) => {
       return preprocessor(options)(file)
     }
   })
@@ -84,7 +73,7 @@ describe('vite preprocessor', function () {
 
     describe('when it finishes cleanly', function () {
       beforeEach(function () {
-        this.vite.build.yields(null, this.statsApi)
+        this.compilerApi.build.yields(null)
       })
 
      /* it('runs vite', function () {
@@ -98,19 +87,19 @@ describe('vite preprocessor', function () {
       })
       */
 
-      it('returns existing bundle if called again with same filePath', function () {
+      /*it('returns existing bundle if called again with same filePath', function () {
         vite.reset()
-        vite.returns(this.vite)
+        vite.returns(this.compilerApi)
 
-        const run = preprocessor(this.options)
+        const build = preprocessor(this.options)
 
-        run(this.file)
-        run(this.file)
+        build(this.file)
+        build(this.file)
         expect(vite).to.be.calledOnce
-      })
+      })*/
 
       it('specifies the entry file', function () {
-        return this.run().then(() => {
+        return this.build().then(() => {
           expect(vite).to.be.calledWithMatch({
             entry: [this.file.filePath],
           })
@@ -118,7 +107,7 @@ describe('vite preprocessor', function () {
       })
 
       it('includes additional entry files', function () {
-        return this.run({
+        return this.build({
           additionalEntries: ['entry-1.js', 'entry-2.js'],
         }).then(() => {
           expect(vite).to.be.calledWithMatch({
@@ -219,27 +208,6 @@ describe('vite preprocessor', function () {
         })
       })
 
-      it('watches when shouldWatch is true', function () {
-        this.file.shouldWatch = true
-        this.compilerApi.watch.yields(null, this.statsApi)
-
-        return this.run().then(() => {
-          expect(this.compilerApi.watch).to.be.called
-        })
-      })
-
-      it('includes watchOptions if provided', function () {
-        this.file.shouldWatch = true
-        this.compilerApi.watch.yields(null, this.statsApi)
-        const options = { watchOptions: { poll: true } }
-
-        return this.run(options).then(() => {
-          expect(this.compilerApi.watch).to.be.calledWith({
-            poll: true,
-          })
-        })
-      })
-
       it('resolves with the output path', function () {
         return this.run().then((outputPath) => {
           expect(outputPath).to.be.equal(this.file.outputPath)
@@ -256,15 +224,13 @@ describe('vite preprocessor', function () {
 
       it('emits "rerun" when shouldWatch is true after there is an update', function () {
         this.file.shouldWatch = true
-        this.compilerApi.watch.yields(null, this.statsApi)
-        this.compilerApi.plugin.withArgs('compile').yields()
+        this.compilerApi.run.yields(null)
 
         return this.run()
         .then(() => {
           expect(this.file.emit).not.to.be.calledWith('rerun')
 
-          this.compilerApi.plugin.withArgs('compile').yield()
-          this.compilerApi.watch.yield(null, this.statsApi)
+          this.compilerApi.run.yield(null)
 
           return Promise.delay(11) // give assertion time till next tick
         })
@@ -275,7 +241,6 @@ describe('vite preprocessor', function () {
 
       it('does not emit "rerun" when shouldWatch is false', function () {
         this.file.shouldWatch = false
-        this.compilerApi.plugin.withArgs('compile').yields()
 
         return this.run().then(() => {
           expect(this.file.emit).not.to.be.calledWith('rerun')
@@ -284,7 +249,7 @@ describe('vite preprocessor', function () {
 
       it('closes bundler when shouldWatch is true and `close` is emitted', function () {
         this.file.shouldWatch = true
-        this.compilerApi.watch.yields(null, this.statsApi)
+        this.compilerApi.watch.yields(null)
 
         return this.run().then(() => {
           this.file.on.withArgs('close').yield()
@@ -339,26 +304,6 @@ describe('vite preprocessor', function () {
           expect(preprocessor.__bundles()[this.file.filePath].deferreds).to.be.empty
           expect(preprocessor.__bundles()[this.file.filePath].promise).to.be.instanceOf(Promise)
           expect(err.stack).to.equal(this.err.stack)
-        })
-      })
-
-      it('it rejects with joined errors when a stats err and strips stacktrace', function () {
-        const errs = ['foo\nat Object.foo', 'bar', 'baz']
-        const errsNoStack = ['foo', 'bar', 'baz']
-
-        this.statsApi = {
-          hasErrors () {
-            return true
-          },
-          toJson () {
-            return { warnings: [], errors: errs }
-          },
-        }
-
-        this.compilerApi.run.yields(null, this.statsApi)
-
-        return this.run().catch((err) => {
-          expect(err.message).to.equal(`vite Compilation Error\n${errsNoStack.join('\n\n')}`)
         })
       })
     })

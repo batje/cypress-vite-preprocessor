@@ -1,5 +1,5 @@
 {
-  "name": "@cypress/vite-preprocessor",
+  "name": "cypress-vite-preprocessor",
   "version": "0.0.0-development",
   "description": "Cypress preprocessor for bundling JavaScript via vite",
   "private": false,
@@ -11,8 +11,7 @@
     "secure": "nsp check",
     "semantic-release": "semantic-release",
     "size": "npm pack --dry",
-    "test": "test-e2e && test-unit",
-    "test-debug": "node --inspect --debug-brk ./node_modules/.bin/_mocha",
+    "test-debug": "node --inspect --inspect-brk ./node_modules/.bin/_mocha test/e2e/*.spec.*",
     "test-e2e": "mocha test/e2e/*.spec.*",
     "test-unit": "mocha test/unit/*.spec.*",
     "test-watch": "yarn test-unit & chokidar '**/*.(js|ts)' 'test/unit/*.(js|ts)' -c 'yarn test-unit'",
@@ -22,18 +21,19 @@
   "dependencies": {
     "bluebird": "3.7.2",
     "debug": "^4.3.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "vite": "^2.9.10",
+    "vite-plugin-istanbul": "^2.7.3"
   },
   "devDependencies": {
     "@fellow/eslint-plugin-coffee": "0.4.13",
     "@types/mocha": "9.1.1",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
-    "babel-loader": "^8.2.5",
     "chai": "4.3.6",
     "chalk": "4.x.x",
     "chokidar-cli": "3.0.0",
-    "cypress": "10.0.2",
+    "cypress": "10.0.3",
     "dependency-check": "4.1.0",
     "deps-ok": "1.4.1",
     "eslint": "8.17.0",
@@ -45,16 +45,12 @@
     "mocha": "^10.0.0",
     "mockery": "2.1.0",
     "proxyquire": "2.1.3",
-    "react": "18.1.0",
-    "react-dom": "18.1.0",
-    "react-scripts": "5.0",
     "rimraf": "3.0.2",
     "semantic-release": "19.0.2",
     "sinon": "^14.0.0",
     "sinon-chai": "^3.7.0",
     "snap-shot-it": "7.9.6",
-    "ts-node": "^10.8.1",
-    "vite": "^2.9.9"
+    "ts-node": "^10.8.1"
   },
   "files": [
     "dist"
